@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 
@@ -11,13 +11,17 @@ export default function Home() {
     e.preventDefault();
 
     const finalKeyword = randomKeyword || keyword;
-    if (!finalKeyword) return alert("Please enter a keyword");
+    if (!finalKeyword) return alert("Por favor, introduce una palabra");
+
+    console.clear();
+    console.log("🚀 Enviando solicitud a: https://lighaisolutions.app.n8n.cloud/webhook/b1163409-be81-4501-9861-c9294b41b35e");
+    console.log("🔑 Palabra clave:", finalKeyword);
 
     setLoading(true);
 
     try {
       const response = await fetch(
-        "https://lighaisolutions.app.n8n.cloud/webhook/b1163409-be81-4501-9861-c9294b41b35e", // ✅ production webhook
+        "https://lighaisolutions.app.n8n.cloud/webhook/b1163409-be81-4501-9861-c9294b41b35e",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -34,62 +38,67 @@ export default function Home() {
         data = await response.text();
       }
 
+      console.log("📜 Respuesta del poema:", data);
+
       navigate("/results", { state: { data, keyword: finalKeyword } });
     } catch (err) {
-      alert("Something went wrong: " + err.message);
+      console.error("❌ Error al generar el poema:", err.message);
+      alert("Ocurrió un error: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const surpriseKeywords = ["Ocean", "Stars", "Dreams", "Love", "Autumn"];
+  const surpriseKeywords = ["Océano", "Estrellas", "Sueños", "Amor", "Otoño"];
   const getRandomKeyword =
     surpriseKeywords[Math.floor(Math.random() * surpriseKeywords.length)];
 
+  // ✅ Generate particles only once
+  const particles = useMemo(() => {
+    return Array.from({ length: 25 }).map((_, i) => {
+      const size = Math.random() * 6 + 4;
+      const left = Math.random() * 100;
+      const duration = Math.random() * 10 + 5;
+      const delay = Math.random() * -20;
+
+      return (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            bottom: "-10px",
+            left: `${left}%`,
+            width: `${size}px`,
+            height: `${size}px`,
+            background: "rgba(255,255,255,0.8)",
+            borderRadius: "50%",
+            animation: `floatUp ${duration}s linear infinite`,
+            animationDelay: `${delay}s`,
+          }}
+        ></span>
+      );
+    });
+  }, []);
+
   return (
     <div style={styles.container}>
-      {/* Particle Background */}
-      <div style={styles.particleContainer}>
-        {Array.from({ length: 25 }).map((_, i) => {
-          const size = Math.random() * 6 + 4;
-          const left = Math.random() * 100;
-          const duration = Math.random() * 10 + 5;
-          const delay = Math.random() * -20;
+      <div style={styles.particleContainer}>{particles}</div>
 
-          return (
-            <span
-              key={i}
-              style={{
-                position: "absolute",
-                bottom: "-10px",
-                left: `${left}%`,
-                width: `${size}px`,
-                height: `${size}px`,
-                background: "rgba(255,255,255,0.8)",
-                borderRadius: "50%",
-                animation: `floatUp ${duration}s linear infinite`,
-                animationDelay: `${delay}s`,
-              }}
-            ></span>
-          );
-        })}
-      </div>
-
-      <h1 style={styles.title}>Poem Generator</h1>
+      <h1 style={styles.title}>Generador de Poemas</h1>
       <p style={styles.subtitle}>
-        Enter a word, and let it bloom into poetry…
+        Escribe una palabra y deja que florezca en poesía…
       </p>
 
       <form onSubmit={(e) => handleSubmit(e)} style={styles.form}>
         <input
           type="text"
-          placeholder="Enter a keyword..."
+          placeholder="Introduce una palabra..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           style={styles.input}
         />
         <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? <Loader visible={loading} /> : "Generate Poem"}
+          {loading ? <Loader visible={loading} /> : "Generar poema"}
         </button>
       </form>
 
@@ -97,10 +106,9 @@ export default function Home() {
         style={{ ...styles.button, marginTop: "20px" }}
         onClick={(e) => handleSubmit(e, getRandomKeyword)}
       >
-        Surprise Me 🌸
+        Sorpréndeme 🌸
       </button>
 
-      {/* Particle animation keyframes */}
       <style>
         {`
           @keyframes floatUp {

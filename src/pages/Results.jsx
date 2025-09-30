@@ -1,41 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
-  const data = location.state?.data;
-  const keyword = location.state?.keyword || "Untitled";
 
-  const [copied, setCopied] = useState(false);
-  const [showPoem, setShowPoem] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setShowPoem(true), 100);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  if (!data) {
-    return (
-      <div style={styles.container}>
-        <h2>No poem was received</h2>
-        <button style={styles.button} onClick={() => navigate("/")}>
-          Back Home
-        </button>
-      </div>
-    );
-  }
-
-  const poem =
-    typeof data === "string"
-      ? data
-      : data.message || JSON.stringify(data, null, 2);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(poem);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const { data, keyword } = location.state || { data: "No se encontró poema", keyword: "" };
 
   return (
     <div style={styles.container}>
@@ -66,39 +35,42 @@ export default function Results() {
         })}
       </div>
 
-      <h1 style={styles.title}>A Poem Written Just for You</h1>
-      <h2 style={styles.subtitle}>Inspired by: {keyword}</h2>
+      {/* Main Content */}
+      <div style={styles.content}>
+        <h1 style={styles.title}>Un poema escrito solo para ti</h1>
+        <p style={styles.subtitle}>
+          Palabra clave: <strong>{keyword}</strong>
+        </p>
 
-      <p
-        style={{
-          ...styles.poem,
-          opacity: showPoem ? 1 : 0,
-          transform: showPoem ? "translateY(0)" : "translateY(15px)",
-          transition: "opacity 1.2s ease, transform 1.2s ease",
-        }}
-      >
-        {poem}
-      </p>
+        {/* Poem Box */}
+        <div style={styles.poemBox}>
+          <p style={styles.poem} className="fade-in">
+            {typeof data === "string" ? data : JSON.stringify(data, null, 2)}
+          </p>
+        </div>
 
-      <div style={styles.buttonRow}>
-        <button style={styles.button} onClick={copyToClipboard}>
-          {copied ? "Copied!" : "Copy Poem"}
-        </button>
-        <button style={styles.button} onClick={() => navigate("/")}>
-          Generate Another
-        </button>
-        <button style={styles.button} onClick={() => navigate("/")}>
-          Back Home
+        {/* Button */}
+        <button onClick={() => navigate("/")} style={styles.button}>
+          Generar otro poema ✨
         </button>
       </div>
 
-      {/* Particle animation keyframes */}
+      {/* Animations */}
       <style>
         {`
           @keyframes floatUp {
             from { transform: translateY(0); opacity: 0; }
             30% { opacity: 1; }
             to { transform: translateY(-110vh); opacity: 0; }
+          }
+
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+
+          .fade-in {
+            animation: fadeIn 1s ease forwards;
           }
         `}
       </style>
@@ -112,10 +84,9 @@ const styles = {
     overflow: "hidden",
     minHeight: "100vh",
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
     padding: "40px 20px",
     color: "#fff",
     fontFamily: "'Merriweather', serif",
@@ -130,48 +101,48 @@ const styles = {
     overflow: "hidden",
     zIndex: 0,
   },
+  content: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "800px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
   title: {
-    fontSize: "2.5rem",
+    fontSize: "3rem",
     marginBottom: "10px",
     fontFamily: "'Playfair Display', serif",
-    zIndex: 1,
   },
   subtitle: {
     fontSize: "1.2rem",
-    marginBottom: "30px",
-    fontStyle: "italic",
+    marginBottom: "40px",
     opacity: 0.9,
-    zIndex: 1,
+    fontStyle: "italic",
+  },
+  poemBox: {
+    background: "rgba(255,255,255,0.1)",
+    border: "1px solid rgba(255,255,255,0.3)",
+    borderRadius: "12px",
+    padding: "30px",
+    maxWidth: "700px",
+    whiteSpace: "pre-wrap",
+    wordWrap: "break-word",
+    marginBottom: "40px",
   },
   poem: {
-    background: "rgba(255,255,255,0.1)",
-    padding: "20px",
-    borderRadius: "12px",
-    fontSize: "1.1rem",
-    lineHeight: "1.6",
-    whiteSpace: "pre-wrap",
-    maxWidth: "600px",
-    textAlign: "center",
-    marginBottom: "30px",
-    zIndex: 1,
-  },
-  buttonRow: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "20px",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    zIndex: 1,
+    fontSize: "1.2rem",
+    lineHeight: "1.8",
+    textAlign: "left",
   },
   button: {
-    padding: "10px 20px",
-    fontSize: "1rem",
+    padding: "14px 24px",
+    fontSize: "1.1rem",
     background: "rgba(255,255,255,0.2)",
     border: "1px solid rgba(255,255,255,0.4)",
     borderRadius: "8px",
     cursor: "pointer",
     color: "#fff",
     transition: "all 0.2s ease",
-    zIndex: 1,
   },
 };
